@@ -1025,6 +1025,14 @@
         const [showValidationAlert, setShowValidationAlert] = useState(false); 
         const [missingFields, setMissingFields] = useState([]);
         const [createdId, setCreatedId] = useState('');
+        const [showReferencingWarning, setShowReferencingWarning] = useState(false);
+
+        useEffect(() => {
+            if (showReferencingWarning) {
+                const timer = setTimeout(() => setShowReferencingWarning(false), 3000);
+                return () => clearTimeout(timer);
+            }
+        }, [showReferencingWarning]);
 
         // Manejo de adjuntos múltiples
         const [attachments, setAttachments] = useState([]);
@@ -1157,7 +1165,23 @@
         };
 
         const handleToggle = (name, val) => {
-            setFormData(prev => ({ ...prev, [name]: val }));
+            // Rule: If VisitaDomiciliaria is selected, Referenciacion cannot be.
+            if (name === 'referenciacion' && val === true && formData.visitaDomiciliaria) {
+                setShowReferencingWarning(true);
+                return; // Prevent state update
+            }
+
+            setFormData(prev => {
+                const newState = { ...prev, [name]: val };
+                // Rule: If VisitaDomiciliaria is enabled, automatically disable Referenciacion and its children.
+                if (name === 'visitaDomiciliaria' && val === true) {
+                    newState.referenciacion = false;
+                    newState.referenciaAcademica = false;
+                    newState.referenciaLaboral = false;
+                    newState.referenciaPersonal = false;
+                }
+                return newState;
+            });
         };
 
         const handleFileSelect = (e) => {
@@ -1634,8 +1658,13 @@
                            )}
                        </div>
                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-200"><ToggleSwitch label="ConsultaAntecedentes" value={formData.consultaAntecedentes} onChange={(v) => handleToggle('consultaAntecedentes', v)} /></div>
-                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                       <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 relative">
                            <ToggleSwitch label="Referenciacion" value={formData.referenciacion} onChange={(v) => handleToggle('referenciacion', v)} />
+                           {showReferencingWarning && (
+                                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded shadow-lg border border-yellow-200 animate-fade-in">
+                                    No se puede seleccionar si la Visita Domiciliaria está activa.
+                                </div>
+                           )}
                            {formData.referenciacion && (
                                <div className="mt-4 pt-4 border-t border-gray-200 space-y-4 animate-fade-in pl-4">
                                    <ToggleSwitch label="ReferenciaAcademica" value={formData.referenciaAcademica} onChange={(v) => handleToggle('referenciaAcademica', v)} />
