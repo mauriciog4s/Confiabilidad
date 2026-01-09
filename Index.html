@@ -1164,6 +1164,14 @@
             }
         };
 
+        const handleIdentificacionChange = (e) => {
+            const { value } = e.target;
+            const sanitizedValue = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+            if (sanitizedValue.length <= 15) {
+                setFormData(prev => ({ ...prev, identificacion: sanitizedValue }));
+            }
+        };
+
         const handleToggle = (name, val) => {
             // Corrected Rule: If VisitaDomiciliaria is selected, ReferenciaPersonal cannot be.
             if (name === 'referenciaPersonal' && val === true && formData.visitaDomiciliaria) {
@@ -1259,7 +1267,11 @@
             if (!formData.clientId) missing.push("ID Cliente");
             if (!formData.nombre) missing.push("Nombre Completo");
             if (!formData.tipoIdentificacion) missing.push("Tipo de Identificación");
-            if (!formData.identificacion) missing.push("Número de Identificación");
+            if (!formData.identificacion) {
+                missing.push("Número de Identificación");
+            } else if (formData.identificacion.length < 5 || formData.identificacion.length > 15) {
+                missing.push("Identificación debe tener entre 5 y 15 caracteres");
+            }
             if (!formData.cargo) missing.push("Cargo");
             if (!formData.celular) missing.push("Celular");
             if (!formData.ciudad) missing.push("Ciudad");
@@ -1562,7 +1574,10 @@
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                         <label className="md:col-span-3 text-sm text-gray-600 font-medium">Identificacion<span className="text-red-500">*</span></label>
-                        <div className="md:col-span-9"><input type="text" name="identificacion" value={formData.identificacion} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-1 focus:ring-appBlue outline-none" /></div>
+                        <div className="md:col-span-9">
+                            <input type="text" name="identificacion" value={formData.identificacion} onChange={handleIdentificacionChange} className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-1 focus:ring-appBlue outline-none" />
+                            <p className="text-xs text-gray-400 mt-1">Solo letras y números, sin espacios ni caracteres especiales. Entre 5 y 15 caracteres.</p>
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                         <label className="md:col-span-3 text-sm text-gray-600 font-medium">FechaExpedicion</label>
