@@ -1265,6 +1265,18 @@
                // if (!formData.clienteClientesSecundarios) missing.push("Cliente Secundario");
             }
 
+            // VALIDACIÓN DE SERVICIOS
+            const hasAtLeastOneService = formData.visitaDomiciliaria ||
+                                         formData.consultaAntecedentes ||
+                                         formData.referenciacion ||
+                                         formData.estudiosPoligrafia ||
+                                         formData.consultaDatacredito ||
+                                         formData.comparativoOEA;
+
+            if (!hasAtLeastOneService) {
+                missing.push("Debe seleccionar al menos un servicio a aplicar");
+            }
+
             // Si hay campos faltantes, mostrar alerta detallada
             if (missing.length > 0) {
                 setMissingFields(missing); // Actualizar lista
