@@ -1025,6 +1025,14 @@
         const [showValidationAlert, setShowValidationAlert] = useState(false); 
         const [missingFields, setMissingFields] = useState([]);
         const [createdId, setCreatedId] = useState('');
+        const [showPersonalRefWarning, setShowPersonalRefWarning] = useState(false);
+
+        useEffect(() => {
+            if (showPersonalRefWarning) {
+                const timer = setTimeout(() => setShowPersonalRefWarning(false), 3000);
+                return () => clearTimeout(timer);
+            }
+        }, [showPersonalRefWarning]);
 
         // Manejo de adjuntos múltiples
         const [attachments, setAttachments] = useState([]);
@@ -1157,7 +1165,20 @@
         };
 
         const handleToggle = (name, val) => {
-            setFormData(prev => ({ ...prev, [name]: val }));
+            // Corrected Rule: If VisitaDomiciliaria is selected, ReferenciaPersonal cannot be.
+            if (name === 'referenciaPersonal' && val === true && formData.visitaDomiciliaria) {
+                setShowPersonalRefWarning(true);
+                return; // Prevent state update
+            }
+
+            setFormData(prev => {
+                const newState = { ...prev, [name]: val };
+                // Corrected Rule: If VisitaDomiciliaria is enabled, automatically disable ReferenciaPersonal.
+                if (name === 'visitaDomiciliaria' && val === true) {
+                    newState.referenciaPersonal = false;
+                }
+                return newState;
+            });
         };
 
         const handleFileSelect = (e) => {
@@ -1640,7 +1661,14 @@
                                <div className="mt-4 pt-4 border-t border-gray-200 space-y-4 animate-fade-in pl-4">
                                    <ToggleSwitch label="ReferenciaAcademica" value={formData.referenciaAcademica} onChange={(v) => handleToggle('referenciaAcademica', v)} />
                                    <ToggleSwitch label="ReferenciaLaboral" value={formData.referenciaLaboral} onChange={(v) => handleToggle('referenciaLaboral', v)} />
-                                   <ToggleSwitch label="ReferenciaPersonal" value={formData.referenciaPersonal} onChange={(v) => handleToggle('referenciaPersonal', v)} />
+                                   <div className="relative">
+                                       <ToggleSwitch label="ReferenciaPersonal" value={formData.referenciaPersonal} onChange={(v) => handleToggle('referenciaPersonal', v)} />
+                                       {showPersonalRefWarning && (
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded shadow-lg border border-yellow-200 animate-fade-in">
+                                                No se puede seleccionar Referencia Personal si la Visita Domiciliaria está activa.
+                                            </div>
+                                       )}
+                                   </div>
                                </div>
                            )}
                        </div>
