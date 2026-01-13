@@ -43,6 +43,7 @@ function apiHandler(request) {
       case 'createRequest': return createRequest(userEmail, payload);
       case 'getSecondaryData': return getSecondaryData(userEmail);
       case 'getRequestDetail': return getRequestDetail(userEmail, payload);
+      case 'refreshUserContext': return getUserContext(userEmail);
       
       // --- FUNCIONES COMENTADAS PARA EVITAR PERMISOS DE DRIVE ---
       // case 'uploadFile': return uploadFileHandler(userEmail, payload);
