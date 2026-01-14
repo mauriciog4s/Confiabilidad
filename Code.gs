@@ -462,7 +462,7 @@ function processBulkUpload(email, { csvContent, clientId }) {
           const insertSql = `
             INSERT INTO \`${tableWrite}\`
             (
-              ID_SolicitudesConfiabilidad, ID_Cliente, Identificacion, NombreCompleto,
+              ID_SolicitudesConfiabilidad, usuarioActualizacion, ID_Cliente, Identificacion, NombreCompleto,
               CentroCostos, TipoTrabajador, EstadoActual, FechaSolicitud,
               TipoIdentificacion, FechaExpedicion, Cargo, Correo, Celular,
               Ciudad, Barrio, Direccion,
@@ -473,7 +473,7 @@ function processBulkUpload(email, { csvContent, clientId }) {
               Linea, LineaNegocio, ClienteProyectoInterno, CentroCostosExterno
             )
             VALUES (
-              @id, @cliente, @ident, @nombre,
+              @id, @usuarioActualizacion, @cliente, @ident, @nombre,
               @cc, @tipo, @estado, CAST(CURRENT_TIMESTAMP() AS STRING),
               @tipoId, @fechaExp, @cargo, @correo, @celular,
               @ciudad, @barrio, @dir,
@@ -487,6 +487,7 @@ function processBulkUpload(email, { csvContent, clientId }) {
           
           const params = {
             id: generateUniqueId(),
+            usuarioActualizacion: email,
             cliente: clientId,
             ident: rowData.Identificacion || '',
             nombre: rowData.NombreCompleto || '',
