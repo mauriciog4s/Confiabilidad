@@ -43,7 +43,6 @@ function apiHandler(request) {
       case 'createRequest': return createRequest(userEmail, payload);
       case 'getSecondaryData': return getSecondaryData(userEmail);
       case 'getRequestDetail': return getRequestDetail(userEmail, payload);
-      case 'refreshUserContext': return getUserContext(userEmail);
       
       // --- FUNCIONES COMENTADAS PARA EVITAR PERMISOS DE DRIVE ---
       // case 'uploadFile': return uploadFileHandler(userEmail, payload);
@@ -539,27 +538,6 @@ function processBulkUpload(email, { csvContent, clientId }) {
 function createRequest(email, payload) {
   // Aseguramos que el email no sea nulo antes de enviarlo
   const emailFinal = email || Session.getActiveUser().getEmail() || 'UsuarioDesconocido';
-
-  // --- VALIDACIÓN DE INTEGRIDAD DEL BACKEND: Al menos un servicio requerido ---
-  // Verifica si al menos una de las banderas de servicio viene como 'true' o 'SI'
-  const servicesToCheck = [
-    payload.visitaDomiciliaria,
-    payload.consultaAntecedentes,
-    payload.referenciacion,
-    payload.estudiosPoligrafia,
-    payload.consultaDatacredito,
-    payload.comparativoOEA
-  ];
-  
-  // La lógica es simple: si todos son falsy/NO, lanza error.
-  const hasAtLeastOneService = servicesToCheck.some(s => 
-    s === true || String(s).toUpperCase() === 'SI'
-  );
-
-  if (!hasAtLeastOneService) {
-    throw new Error("Solicitud Rechazada: Debe seleccionar al menos un servicio a aplicar.");
-  }
-  // --------------------------------------------------------------------------
 
   const context = getUserContext(email);
   if (!context.isValidUser) throw new Error("Acceso Denegado.");
