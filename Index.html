@@ -1025,14 +1025,6 @@
         const [showValidationAlert, setShowValidationAlert] = useState(false); 
         const [missingFields, setMissingFields] = useState([]);
         const [createdId, setCreatedId] = useState('');
-        const [showPersonalRefWarning, setShowPersonalRefWarning] = useState(false);
-
-        useEffect(() => {
-            if (showPersonalRefWarning) {
-                const timer = setTimeout(() => setShowPersonalRefWarning(false), 3000);
-                return () => clearTimeout(timer);
-            }
-        }, [showPersonalRefWarning]);
 
         // Manejo de adjuntos múltiples
         const [attachments, setAttachments] = useState([]);
@@ -1164,29 +1156,8 @@
             }
         };
 
-        const handleIdentificacionChange = (e) => {
-            const { value } = e.target;
-            const sanitizedValue = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
-            if (sanitizedValue.length <= 15) {
-                setFormData(prev => ({ ...prev, identificacion: sanitizedValue }));
-            }
-        };
-
         const handleToggle = (name, val) => {
-            // Corrected Rule: If VisitaDomiciliaria is selected, ReferenciaPersonal cannot be.
-            if (name === 'referenciaPersonal' && val === true && formData.visitaDomiciliaria) {
-                setShowPersonalRefWarning(true);
-                return; // Prevent state update
-            }
-
-            setFormData(prev => {
-                const newState = { ...prev, [name]: val };
-                // Corrected Rule: If VisitaDomiciliaria is enabled, automatically disable ReferenciaPersonal.
-                if (name === 'visitaDomiciliaria' && val === true) {
-                    newState.referenciaPersonal = false;
-                }
-                return newState;
-            });
+            setFormData(prev => ({ ...prev, [name]: val }));
         };
 
         const handleFileSelect = (e) => {
@@ -1267,11 +1238,7 @@
             if (!formData.clientId) missing.push("ID Cliente");
             if (!formData.nombre) missing.push("Nombre Completo");
             if (!formData.tipoIdentificacion) missing.push("Tipo de Identificación");
-            if (!formData.identificacion) {
-                missing.push("Número de Identificación");
-            } else if (formData.identificacion.length < 5 || formData.identificacion.length > 15) {
-                missing.push("Identificación debe tener entre 5 y 15 caracteres");
-            }
+            if (!formData.identificacion) missing.push("Número de Identificación");
             if (!formData.cargo) missing.push("Cargo");
             if (!formData.celular) missing.push("Celular");
             if (!formData.ciudad) missing.push("Ciudad");
@@ -1296,18 +1263,6 @@
                // Si es Externo, validamos si se requiere alguno de los nuevos campos. 
                // De momento los dejo opcionales o a criterio, salvo que se definan obligatorios.
                // if (!formData.clienteClientesSecundarios) missing.push("Cliente Secundario");
-            }
-
-            // VALIDACIÓN DE SERVICIOS
-            const hasAtLeastOneService = formData.visitaDomiciliaria ||
-                                         formData.consultaAntecedentes ||
-                                         formData.referenciacion ||
-                                         formData.estudiosPoligrafia ||
-                                         formData.consultaDatacredito ||
-                                         formData.comparativoOEA;
-
-            if (!hasAtLeastOneService) {
-                missing.push("Debe seleccionar al menos un servicio a aplicar");
             }
 
             // Si hay campos faltantes, mostrar alerta detallada
@@ -1574,10 +1529,7 @@
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                         <label className="md:col-span-3 text-sm text-gray-600 font-medium">Identificacion<span className="text-red-500">*</span></label>
-                        <div className="md:col-span-9">
-                            <input type="text" name="identificacion" value={formData.identificacion} onChange={handleIdentificacionChange} className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-1 focus:ring-appBlue outline-none" />
-                            <p className="text-xs text-gray-400 mt-1">Solo letras y números, sin espacios ni caracteres especiales. Entre 5 y 15 caracteres.</p>
-                        </div>
+                        <div className="md:col-span-9"><input type="text" name="identificacion" value={formData.identificacion} onChange={handleChange} className="w-full border border-gray-300 rounded-md p-2 text-sm focus:ring-1 focus:ring-appBlue outline-none" /></div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
                         <label className="md:col-span-3 text-sm text-gray-600 font-medium">FechaExpedicion</label>
@@ -1676,14 +1628,7 @@
                                <div className="mt-4 pt-4 border-t border-gray-200 space-y-4 animate-fade-in pl-4">
                                    <ToggleSwitch label="ReferenciaAcademica" value={formData.referenciaAcademica} onChange={(v) => handleToggle('referenciaAcademica', v)} />
                                    <ToggleSwitch label="ReferenciaLaboral" value={formData.referenciaLaboral} onChange={(v) => handleToggle('referenciaLaboral', v)} />
-                                   <div className="relative">
-                                       <ToggleSwitch label="ReferenciaPersonal" value={formData.referenciaPersonal} onChange={(v) => handleToggle('referenciaPersonal', v)} />
-                                       {showPersonalRefWarning && (
-                                            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-max bg-yellow-100 text-yellow-800 text-xs font-bold px-3 py-1 rounded shadow-lg border border-yellow-200 animate-fade-in">
-                                                No se puede seleccionar Referencia Personal si la Visita Domiciliaria está activa.
-                                            </div>
-                                       )}
-                                   </div>
+                                   <ToggleSwitch label="ReferenciaPersonal" value={formData.referenciaPersonal} onChange={(v) => handleToggle('referenciaPersonal', v)} />
                                </div>
                            )}
                        </div>
@@ -2026,7 +1971,7 @@
         );
       };
 
-      const ConfigurationView = ({ userContext, onForceSync, syncStatus, lastSync, onRefreshClients }) => {
+      const ConfigurationView = ({ userContext, onForceSync, syncStatus, lastSync }) => {
         return (
           <div className="p-8 max-w-4xl mx-auto animate-fade-in">
             <div className="flex justify-between items-center mb-6">
@@ -2062,18 +2007,6 @@
                             </div>
                         </div>
                         <span className="text-xs font-bold text-gray-400">{syncStatus === 'secondary' ? 'Descargando...' : 'Sincronizado'}</span>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded border border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-full bg-gray-100 text-gray-600">
-                                <Icon name="User" size={18}/>
-                            </div>
-                            <div>
-                                <div className="font-bold text-gray-700 text-sm">Clientes Asignados</div>
-                                <div className="text-xs text-gray-500">Actualiza tu lista de clientes sin recargar.</div>
-                            </div>
-                        </div>
-                        <button onClick={onRefreshClients} className="px-3 py-1.5 bg-white border rounded text-xs font-bold text-gray-600 hover:bg-gray-100 transition">Actualizar</button>
                     </div>
                 </div>
             </div>
@@ -2157,18 +2090,6 @@
             }
         };
 
-        const handleRefreshClients = async () => {
-            setToast("Actualizando clientes...");
-            try {
-                const updatedCtx = await runServer('refreshUserContext', {});
-                setUserCtx(updatedCtx);
-                setToast("¡Clientes actualizados con éxito!");
-            } catch (e) {
-                console.error("Error refrescando clientes:", e);
-                setToast("Error al actualizar: " + e.message);
-            }
-        };
-
         const handleLoginAttempt = async (email) => {
             try {
                 const ctx = await runServer('getUserContext', {});
@@ -2229,7 +2150,7 @@
                view === 'detail' && selectedRequest ? <RequestDetail requestId={selectedRequest.ID_SolicitudesConfiabilidad || selectedRequest.NSolicitud} preloadedData={selectedRequest} secondaryData={secondaryData} onBack={() => setView('history')} /> : 
                view === 'create' ? <CreateRequest userContext={userCtx} setView={setView} onReload={() => refreshData(false)} secondaryData={secondaryData} /> : 
                view === 'bulk' ? <BulkUpload userContext={userCtx} setView={setView} onReload={() => refreshData(true)} /> : 
-               view === 'config' ? <ConfigurationView userContext={userCtx} onForceSync={() => refreshData(true)} syncStatus={syncStatus} lastSync={lastSync} onRefreshClients={handleRefreshClients} /> :
+               view === 'config' ? <ConfigurationView userContext={userCtx} onForceSync={() => refreshData(true)} syncStatus={syncStatus} lastSync={lastSync} /> :
                <RequestList setView={setView} setSelectedRequest={setSelectedRequest} initialData={initialData} onRefresh={() => refreshData(true)} refreshing={syncStatus !== 'idle'} userContext={userCtx} />}
             </div>
             {toast && <Toast message={toast} onClose={() => setToast(null)} />}
