@@ -1782,7 +1782,10 @@
 
                    <div className="mt-6">
                         <label className="block text-sm text-gray-700 font-bold mb-2">Notas Adicionales</label>
-                        <textarea name="notas" maxLength={5000} value={formData.notas} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm h-24 outline-none focus:ring-1 focus:ring-appBlue resize-none" placeholder="Escriba aquí cualquier observación relevante..."></textarea>
+                        <textarea name="notas" maxLength={3000} value={formData.notas} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm h-24 outline-none focus:ring-1 focus:ring-appBlue resize-none" placeholder="Escriba aquí cualquier observación relevante..."></textarea>
+                        <div className="text-right text-xs text-gray-400 mt-1">
+                            {formData.notas.length} / 3000
+                        </div>
                    </div>
 
                    <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
