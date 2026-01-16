@@ -859,6 +859,9 @@
                     <DetailField label="Ciudad" value={detailData.header.Ciudad} />
                     <DetailField label="Dirección De Residencia" value={detailData.header.Direccion} />
                     <DetailField label="Barrio" value={detailData.header.Barrio} />
+                    <div className="col-span-1 md:col-span-2">
+                        <DetailField label="Notas Adicionales" value={detailData.header.Notas} />
+                    </div>
                   </div>
                 </Card>
                 <Card title="Novedades" count={detailData.notas.length}><GenericList items={detailData.notas} labelKey="Nota" dateKey="FechaActualizacion" /></Card>
