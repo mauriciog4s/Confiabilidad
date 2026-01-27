@@ -430,6 +430,11 @@ function processBulkUpload(email, { csvContent, clientId }) {
         }
     }
 
+    // Validación de Incompatibilidad: Visita Domiciliaria vs Referencia Personal
+    if (normalizeStr(rowData.VisitaDomiciliaria) === 'SI' && normalizeStr(rowData.ReferenciaPersonal) === 'SI') {
+        validationErrors.push(`Error: Incompatibilidad de servicios | Registro: Fila ${rowNum} | Visita Domiciliaria y Referencia Personal no pueden seleccionarse al mismo tiempo.`);
+    }
+
     if (isInternal) {
         if (!rowData.Linea) validationErrors.push(`Error: Campo obligatorio para Cliente Interno vacío | Registro: Fila ${rowNum}`);
         if (!rowData.LineaNegocio) validationErrors.push(`Error: Campo obligatorio para Cliente Interno vacío | Registro: Fila ${rowNum}`);
