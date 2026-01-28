@@ -304,14 +304,14 @@
                         <button 
                             type="button" 
                             onClick={() => onChange(false)} 
-                            className={`toggle-btn ${!value ? 'toggle-btn-no' : 'toggle-btn-inactive'}`}
+                            className={`toggle-btn ${value === false ? 'toggle-btn-no' : 'toggle-btn-inactive'}`}
                         >
                             NO
                         </button>
                         <button 
                             type="button" 
                             onClick={() => onChange(true)} 
-                            className={`toggle-btn ${value ? 'toggle-btn-si' : 'toggle-btn-inactive'}`}
+                            className={`toggle-btn ${value === true ? 'toggle-btn-si' : 'toggle-btn-inactive'}`}
                         >
                             SI
                         </button>
@@ -377,7 +377,7 @@
                     <div className="flex-1 flex items-center justify-center p-4">
                         <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
                             <div className="flex justify-center mb-6">
-                               <img src="https://www.g4s.com/es-co/-/media/g4s/global/images/logos/g4s---an-allied-universal-company-logo/g4s_one-company_logo_180x136.ashx" alt="G4S Logo" className="h-20 w-auto object-contain" />
+                               <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/G4S_logo.svg" alt="G4S Logo" className="h-20 w-auto object-contain" />
                             </div>
                             <h1 className="text-2xl font-bold text-gray-800 mb-2">Confiabilidad</h1>
                             <p className="text-gray-500 mb-8 text-sm">Plataforma de Gestión</p>
@@ -405,7 +405,7 @@
         return (
           <div className="w-64 bg-white h-screen border-r border-gray-200 flex flex-col shadow-lg z-10 fixed">
             <div className="p-6 border-b border-gray-100 flex items-center gap-3 cursor-pointer" onClick={() => setView('home')}>
-               <img src="https://www.g4s.com/es-co/-/media/g4s/global/images/logos/g4s---an-allied-universal-company-logo/g4s_one-company_logo_180x136.ashx" alt="G4S Logo" className="h-8 w-auto object-contain" />
+               <img src="https://upload.wikimedia.org/wikipedia/commons/2/26/G4S_logo.svg" alt="G4S Logo" className="h-8 w-auto object-contain" />
                <span className="font-bold text-gray-800 text-lg">Confiabilidad</span>
             </div>
             <div className="flex-1 overflow-y-auto py-4">
@@ -1063,9 +1063,9 @@
             modalidadVisita: '', 
             consultaAntecedentes: false,
             referenciacion: false,
-            referenciaAcademica: false,
-            referenciaLaboral: false,
-            referenciaPersonal: false,
+            referenciaAcademica: null,
+            referenciaLaboral: null,
+            referenciaPersonal: null,
             estudiosPoligrafia: false,
             tipoPoligrafia: '',
             ciudadPoligrafia: '',
@@ -1240,9 +1240,9 @@
                 modalidadVisita: '',
                 consultaAntecedentes: false,
                 referenciacion: false,
-                referenciaAcademica: false,
-                referenciaLaboral: false,
-                referenciaPersonal: false,
+                referenciaAcademica: null,
+                referenciaLaboral: null,
+                referenciaPersonal: null,
                 estudiosPoligrafia: false,
                 tipoPoligrafia: '',
                 ciudadPoligrafia: '',
@@ -1280,7 +1280,6 @@
             if (!formData.ciudad) missing.push("Ciudad");
             if (!formData.direccion) missing.push("Dirección");
             if (!formData.tipoTrabajador) missing.push("Tipo Trabajador");
-            if (formData.visitaDomiciliaria === true && !formData.modalidadVisita) missing.push("Modalidad de Visita");
             
             // VALIDACION ESPECIFICA DE FORMATO
             if (formData.correo && !isValidEmail(formData.correo)) missing.push("Formato de Correo inválido");
@@ -1302,7 +1301,27 @@
                // if (!formData.clienteClientesSecundarios) missing.push("Cliente Secundario");
             }
 
-            // VALIDACIÓN DE SERVICIOS
+            // --- VALIDACIONES DE SERVICIOS ESPECÍFICAS ---
+            
+            // 1. Visita Domiciliaria -> Modalidad
+            if (formData.visitaDomiciliaria && !formData.modalidadVisita) {
+                missing.push("Modalidad Visita (Obligatorio para Visita Domiciliaria)");
+            }
+
+            // 2. Referenciación -> Validar que cada subtipo tenga selección (SI o NO)
+            if (formData.referenciacion) {
+                if (formData.referenciaAcademica === null) missing.push("Referencia Académica (Debe seleccionar SI o NO)");
+                if (formData.referenciaLaboral === null) missing.push("Referencia Laboral (Debe seleccionar SI o NO)");
+                if (formData.referenciaPersonal === null) missing.push("Referencia Personal (Debe seleccionar SI o NO)");
+            }
+
+            // 3. Poligrafía -> Tipo y Ciudad
+            if (formData.estudiosPoligrafia) {
+                if (!formData.tipoPoligrafia) missing.push("Tipo de Poligrafía");
+                if (!formData.ciudadPoligrafia) missing.push("Ciudad Poligrafía");
+            }
+
+            // VALIDACIÓN DE SERVICIOS GLOBAL
             const hasAtLeastOneService = formData.visitaDomiciliaria ||
                                          formData.consultaAntecedentes ||
                                          formData.referenciacion ||
@@ -1329,9 +1348,11 @@
                 visitaDomiciliaria: formData.visitaDomiciliaria ? 'SI' : 'NO',
                 consultaAntecedentes: formData.consultaAntecedentes ? 'SI' : 'NO',
                 referenciacion: formData.referenciacion ? 'SI' : 'NO',
-                referenciaAcademica: formData.referenciaAcademica ? 'SI' : 'NO',
-                referenciaLaboral: formData.referenciaLaboral ? 'SI' : 'NO',
-                referenciaPersonal: formData.referenciaPersonal ? 'SI' : 'NO',
+                // Enviamos 'NO' por defecto si es null para evitar errores en backend, 
+                // aunque la validación arriba asegura que el usuario eligió algo si referenciacion está activo.
+                referenciaAcademica: formData.referenciaAcademica === true ? 'SI' : 'NO',
+                referenciaLaboral: formData.referenciaLaboral === true ? 'SI' : 'NO',
+                referenciaPersonal: formData.referenciaPersonal === true ? 'SI' : 'NO',
                 estudiosPoligrafia: formData.estudiosPoligrafia ? 'SI' : 'NO',
                 consultaDatacredito: formData.consultaDatacredito ? 'SI' : 'NO',
                 comparativoOEA: formData.comparativoOEA ? 'SI' : 'NO',
