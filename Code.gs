@@ -410,12 +410,6 @@ function processBulkUpload(email, { csvContent, clientId }) {
 
     if (!hasData) continue;
     const rowNum = i + 1;
-
-    if (rowData.VisitaDomiciliaria && normalizeStr(rowData.VisitaDomiciliaria) === 'SI') {
-      if (!rowData.ModalidadVisita || !validModalidades.has(normalizeStr(rowData.ModalidadVisita))) {
-        validationErrors.push(`Error: Modalidad de Visita no válida o vacía | Registro: Fila ${rowNum}`);
-      }
-    }
     
     // VALIDACIONES (simplificadas para el ejemplo, pero mantienen la lógica original)
     if (!rowData.NombreCompleto) validationErrors.push(`Error: Campo obligatorio vacío | Registro: Fila ${rowNum} | Columna: NombreCompleto`);
@@ -565,10 +559,6 @@ function createRequest(email, payload) {
 
   if (!hasAtLeastOneService) {
     throw new Error("Solicitud Rechazada: Debe seleccionar al menos un servicio a aplicar.");
-  }
-
-  if ((payload.visitaDomiciliaria === true || String(payload.visitaDomiciliaria).toUpperCase() === 'SI') && !payload.modalidadVisita) {
-    throw new Error("Solicitud Rechazada: Modalidad de Visita es requerida cuando se selecciona Visita Domiciliaria.");
   }
   // --------------------------------------------------------------------------
 
