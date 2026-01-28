@@ -1280,6 +1280,7 @@
             if (!formData.ciudad) missing.push("Ciudad");
             if (!formData.direccion) missing.push("Dirección");
             if (!formData.tipoTrabajador) missing.push("Tipo Trabajador");
+            if (formData.visitaDomiciliaria === true && !formData.modalidadVisita) missing.push("Modalidad de Visita");
             
             // VALIDACION ESPECIFICA DE FORMATO
             if (formData.correo && !isValidEmail(formData.correo)) missing.push("Formato de Correo inválido");
